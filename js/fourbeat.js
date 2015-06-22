@@ -29,9 +29,6 @@ var FourBeat = {
     setButtonEventListener : function(listener) {
         this.buttonListener = listener;
     },
-    setArrowKeyEmulation : function(enable) {
-        this.arrowKeyEmulation = enable;
-    },
     playSound : function(id) {
         if (typeof FbNativeInterface === 'undefined') {
             console.log('Warning : calling playSound() not on Android');
@@ -59,6 +56,20 @@ var FourBeat = {
         } else {
             FbNativeInterface.stopMusic();
         }
+    },
+    enableArrowKeyEmulation : function() {
+        document.onkeydown = function(e) {
+            e = e || window.event;
+            if (e.keyCode === 40) {
+                nativeFourBeatEvent({eventType:'button', state:'PRESS', color:'RED'});
+            } else if (e.keyCode === 37) {
+                nativeFourBeatEvent({eventType:'button', state:'PRESS', color:'BLUE'});
+            } else if (e.keyCode === 39) {
+                nativeFourBeatEvent({eventType:'button', state:'PRESS', color:'YELLOW'});
+            } else if (e.keyCode === 38) {
+                nativeFourBeatEvent({eventType:'button', state:'PRESS', color:'GREEN'});
+            }
+        }
     }
 }
 
@@ -69,7 +80,11 @@ var FourBeat = {
 function nativeFourBeatEvent(fbEvent) {
     switch (fbEvent.eventType) {
     case 'button':
-        FourBeat.buttonListener(fbEvent.state, fbEvent.color);
+        if (typeof FourBeat.buttonListener === "undefined") {
+            console.log("Set the button event listener.");
+        } else {
+            FourBeat.buttonListener(fbEvent.state, fbEvent.color);
+        }
         break;
     case 'callback':
         switch (fbEvent.functionName) {
@@ -83,24 +98,3 @@ function nativeFourBeatEvent(fbEvent) {
         }
     }
 }
-
-
-//
-// Arrow key FourBeat emulation
-//
-document.onkeydown = function(e) {
-    if (FourBeat.arrowKeyEmulation) {
-        e = e || window.event;
-
-        if (e.keyCode == '38') {
-            nativeFourBeatEvent('PRESS', 'RED');
-        } else if (e.keyCode == '37') {
-            nativeFourBeatEvent('PRESS', 'BLUE');
-        } else if (e.keyCode == '39') {
-            nativeFourBeatEvent('PRESS', 'YELLOW');
-        } else if (e.keyCode == '40') {
-            nativeFourBeatEvent('PRESS', 'GREEN');
-        }
-    }
-}
-
